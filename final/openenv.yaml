@@ -1,0 +1,28 @@
+spec_version: 1
+name: support_ticket_env
+description: "A customer support environment for ticket resolution using knowledge base and customer data."
+type: space
+runtime: fastapi
+app: server.app:app
+port: 8000
+
+tasks:
+  - id: easy
+    name: "Password Reset"
+    description: "User wants to reset their password."
+    difficulty: easy
+    grader:
+      type: programmatic
+  - id: medium
+    name: "Order Status"
+    description: "User wants to know the status of their latest order."
+    difficulty: medium
+    grader:
+      type: programmatic
+  - id: hard
+    name: "Refund Request"
+    description: "User wants a refund for their Premium subscription. Check eligibility."
+    difficulty: hard
+    grader:
+      type: programmatic
+
