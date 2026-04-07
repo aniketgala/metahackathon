@@ -199,14 +199,22 @@ class FinalEnvironment(Environment):
                 response = "Ticket closed but resolution was incorrect or incomplete."
 
         self.last_response = response
+        
+        # Accumulate reward and ensure the total is strictly within (0, 1) if episode is ending
+        previous_accumulated = self.accumulated_reward
         self.accumulated_reward += reward
         
-        # Clamp reward to 0.0-1.0 range (though accumulated might exceed slightly)
-        # But per-step reward should be returned as is.
+        done = self.is_closed or self._state.step_count >= 10
+        if done:
+            # Clamp the final total reward to [0.01, 0.99] to satisfy "strictly between 0 and 1"
+            target_total = max(0.01, min(0.99, self.accumulated_reward))
+            # Adjust the current step's reward so that (previous_accumulated + adjusted_reward) == target_total
+            reward = target_total - previous_accumulated
+            self.accumulated_reward = target_total
 
         obs = self._get_observation()
         obs.reward = reward
-        obs.done = self.is_closed or self._state.step_count >= 10
+        obs.done = done
         return obs
 
     def _get_observation(self) -> FinalObservation:
