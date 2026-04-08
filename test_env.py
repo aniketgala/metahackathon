@@ -33,7 +33,7 @@ def test_failure_case():
     print(f"Resolution Reward: {res.reward}, Total Reward: {total_reward}")
     
     assert res.done
-    assert 0.0 < total_reward < 1.0
+    assert 0.1 <= total_reward <= 0.9
     print("Failure case passed!")
 
 def test_medium_task():
@@ -53,7 +53,7 @@ def test_medium_task():
     print(f"Resolution Reward: {res.reward}, Total Reward: {total_reward}")
     
     assert res.done
-    assert 0.0 < total_reward < 1.0
+    assert 0.1 <= total_reward <= 0.9
     print("Medium task passed!")
 
 def test_hard_task():
@@ -78,7 +78,7 @@ def test_hard_task():
     print(f"Resolution Reward: {res.reward}, Total Reward: {total_reward}")
     
     assert res.done
-    assert 0.0 < total_reward < 1.0
+    assert 0.1 <= total_reward <= 0.9
     print("Hard task passed!")
 
 if __name__ == "__main__":

@@ -94,7 +94,7 @@ class FinalEnvironment(Environment):
         self.search_results = []
         self.customer_details = {}
         self.last_response = ""
-        self.accumulated_reward = 0.01 # Start with non-zero
+        self.accumulated_reward = 0.1 # Start with non-zero
         self.found_kb = False
         self.found_customer = False
         self.history = []
@@ -116,7 +116,7 @@ class FinalEnvironment(Environment):
         self.search_results = []
         self.customer_details = {}
         self.last_response = f"New ticket assigned: {task['description']}"
-        self.accumulated_reward = 0.01 # Start at 0.01 instead of 0.0
+        self.accumulated_reward = 0.1 # Start at 0.1
         self.history = []
         
         # Track if they've already used the correct tools to avoid reward spamming
@@ -124,7 +124,7 @@ class FinalEnvironment(Environment):
         self.found_customer = False
 
         # reset() should return tiny reward and done=False
-        return self._get_observation(reward=0.01, done=False, info={})
+        return self._get_observation(reward=0.1, done=False, info={})
 
     def step(self, action: FinalAction) -> FinalObservation:  # type: ignore[override]
         """
@@ -132,17 +132,17 @@ class FinalEnvironment(Environment):
         """
         if self.is_closed:
             # If already closed, return tiny positive reward and done=True
-            return self._get_observation(reward=0.001, done=True, info={"score": self.accumulated_reward})
+            return self._get_observation(reward=0.1, done=True, info={"score": self.accumulated_reward})
 
         self._state.step_count += 1
+        
+        # Log the action in history
+        self.history.append(action.dict())
         
         # Calculate the raw reward for this step
         step_potential = -0.01 # Base step penalty
         response = ""
-        
-        # Action logging
-        action_data = action.model_dump()
-        self.history.append({"step": self._state.step_count, "action": action_data})
+        done = False
 
         if action.action_type == "search_kb":
             query = action.query.lower() if action.query else ""
@@ -180,7 +180,8 @@ class FinalEnvironment(Environment):
 
         elif action.action_type == "resolve_ticket":
             self.is_closed = True
-            res = action.resolution or ""
+            done = True
+            res = action.resolution
             
             # Grader logic
             task = self.TASKS[self.current_task_id]
@@ -197,31 +198,29 @@ class FinalEnvironment(Environment):
                     success = True
 
             if success:
-                success_rewards = {"easy": 0.8, "medium": 0.6, "hard": 0.4}
-                step_potential += success_rewards.get(self.current_task_id, 0.4)
+                success_rewards = {"easy": 0.7, "medium": 0.5, "hard": 0.3}
+                step_potential += success_rewards.get(self.current_task_id, 0.3)
                 response = "Ticket resolved successfully."
             else:
-                step_potential -= 0.4
-                response = "Ticket closed but resolution was incorrect or incomplete."
+                step_potential -= 0.3
+                response = "Ticket resolution rejected. Requirements not met."
 
         self.last_response = response
         
         # ENSURE CUMULATIVE REWARD IS STRICTLY WITHIN (0, 1)
-        # We want sum(rewards) to be in [0.01, 0.99]
+        # We want sum(rewards) to be in [0.1, 0.9]
         # Current sum is self.accumulated_reward
         # New sum should be:
         new_accumulated = self.accumulated_reward + step_potential
         
         # Clamp the new cumulative total to strictly within (0, 1)
-        # We use 0.01 as minimum and 0.99 as maximum
-        target_total = max(0.01, min(0.99, new_accumulated))
+        # We use 0.1 as minimum and 0.9 as maximum
+        target_total = max(0.1, min(0.9, new_accumulated))
         
         # The actual reward we return for THIS step is the difference
         # This ensures sum(step_rewards) == target_total
         actual_step_reward = target_total - self.accumulated_reward
         self.accumulated_reward = target_total
-        
-        done = self.is_closed or self._state.step_count >= 10
         
         info = {"score": float(self.accumulated_reward)}
         return self._get_observation(reward=float(actual_step_reward), done=bool(done), info=info)
@@ -229,15 +228,15 @@ class FinalEnvironment(Environment):
     def _get_observation(self, reward: float = 0.0, done: bool = False, info: Dict = None) -> FinalObservation:
         task = self.TASKS[self.current_task_id]
         return FinalObservation(
-            ticket_id=task["id"],
+            ticket_id=self._state.episode_id,
             ticket_description=task["description"],
             customer_id=task["customer_id"],
             search_results=self.search_results,
             customer_details=self.customer_details,
             last_response=self.last_response,
             is_closed=self.is_closed,
-            done=done,
             reward=reward,
+            done=done,
             task_score=float(self.accumulated_reward),
             info=info or {}
         )
@@ -251,4 +250,4 @@ class FinalEnvironment(Environment):
         Return the final score for the current episode.
         Strictly between 0 and 1.
         """
-        return max(0.01, min(0.99, self.accumulated_reward))
+        return max(0.1, min(0.9, self.accumulated_reward))
