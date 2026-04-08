@@ -6,7 +6,7 @@ def test_easy_task():
     obs = env.reset(task_id="easy")
     print(f"Task: {obs.ticket_description}")
     
-    total_reward = 0.0
+    total_reward = obs.reward
     # Action 1: Search KB
     res = env.step(FinalAction(action_type="search_kb", query="password reset"))
     total_reward += res.reward
@@ -26,7 +26,7 @@ def test_failure_case():
     obs = env.reset(task_id="easy")
     print(f"Task: {obs.ticket_description} (Failure case)")
     
-    total_reward = 0.0
+    total_reward = obs.reward
     # Action 1: Wrong Resolve
     res = env.step(FinalAction(action_type="resolve_ticket", resolution="Wrong resolution"))
     total_reward += res.reward
@@ -41,7 +41,7 @@ def test_medium_task():
     obs = env.reset(task_id="medium")
     print(f"Task: {obs.ticket_description}")
     
-    total_reward = 0.0
+    total_reward = obs.reward
     # Action 1: Get customer details
     res = env.step(FinalAction(action_type="get_customer_details", customer_id="CUST123"))
     total_reward += res.reward
@@ -61,7 +61,7 @@ def test_hard_task():
     obs = env.reset(task_id="hard")
     print(f"Task: {obs.ticket_description}")
     
-    total_reward = 0.0
+    total_reward = obs.reward
     # Action 1: Search KB for refund policy
     res = env.step(FinalAction(action_type="search_kb", query="refund policy"))
     total_reward += res.reward

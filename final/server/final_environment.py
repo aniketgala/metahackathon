@@ -94,7 +94,7 @@ class FinalEnvironment(Environment):
         self.search_results = []
         self.customer_details = {}
         self.last_response = ""
-        self.accumulated_reward = 0.05 # Start with non-zero
+        self.accumulated_reward = 0.01 # Start with non-zero
         self.found_kb = False
         self.found_customer = False
         self.history = []
@@ -116,15 +116,15 @@ class FinalEnvironment(Environment):
         self.search_results = []
         self.customer_details = {}
         self.last_response = f"New ticket assigned: {task['description']}"
-        self.accumulated_reward = 0.0 # Start at 0.0
+        self.accumulated_reward = 0.01 # Start at 0.01 instead of 0.0
         self.history = []
         
         # Track if they've already used the correct tools to avoid reward spamming
         self.found_kb = False
         self.found_customer = False
 
-        # reset() should return reward=0.0 and done=False
-        return self._get_observation(reward=0.0, done=False, info={})
+        # reset() should return tiny reward and done=False
+        return self._get_observation(reward=0.01, done=False, info={})
 
     def step(self, action: FinalAction) -> FinalObservation:  # type: ignore[override]
         """

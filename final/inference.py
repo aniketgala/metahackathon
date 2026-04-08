@@ -92,7 +92,7 @@ def run_task(task_id: str, env_url: str):
         obs = result.observation
         done = False
         step_count = 0
-        total_reward = 0.0
+        total_reward = result.reward or 0.01
         
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
