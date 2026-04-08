@@ -37,3 +37,7 @@ class FinalObservation(Observation):
     customer_details: Dict[str, Any] = Field(default_factory=dict, description="Retrieved customer information")
     last_response: str = Field(default="", description="The response from the last action taken")
     is_closed: bool = Field(default=False, description="Whether the ticket has been closed")
+    reward: float = Field(default=0.001, description="The reward for the current step")
+    done: bool = Field(default=False, description="Whether the episode is finished")
+    task_score: float = Field(default=0.001, description="The final score of the task")
+    info: Dict[str, Any] = Field(default_factory=dict, description="Additional information")

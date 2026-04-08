@@ -90,8 +90,14 @@ class FinalEnvironment(Environment):
         self._state = State(episode_id=str(uuid4()), step_count=0)
         self.task_order = ["easy", "medium", "hard"]
         self.current_task_id = "easy"
-        # Don't call reset here to avoid double increment on first reset
-        self.is_closed = True # Mark as closed initially
+        self.is_closed = False # Start as False
+        self.search_results = []
+        self.customer_details = {}
+        self.last_response = ""
+        self.accumulated_reward = 0.05 # Start with non-zero
+        self.found_kb = False
+        self.found_customer = False
+        self.history = []
 
     def reset(self, task_id: str = None) -> FinalObservation:
         """
@@ -107,17 +113,17 @@ class FinalEnvironment(Environment):
         
         self._state = State(episode_id=str(uuid4()), step_count=0)
         self.is_closed = False
-        self.search_results: List[str] = []
-        self.customer_details: Dict[str, Any] = {}
+        self.search_results = []
+        self.customer_details = {}
         self.last_response = f"New ticket assigned: {task['description']}"
-        self.accumulated_reward = 0.0
-        self.history: List[Dict[str, Any]] = []
+        self.accumulated_reward = 0.001 # Initialize with non-zero
+        self.history = []
         
         # Track if they've already used the correct tools to avoid reward spamming
         self.found_kb = False
         self.found_customer = False
 
-        return self._get_observation()
+        return self._get_observation(reward=0.001, done=False, info={})
 
     def step(self, action: FinalAction) -> FinalObservation:  # type: ignore[override]
         """
@@ -126,10 +132,12 @@ class FinalEnvironment(Environment):
         if self.is_closed:
             obs = self._get_observation()
             obs.done = True
+            obs.reward = 0.001  # Return a tiny non-zero reward even if closed
             return obs
 
         self._state.step_count += 1
-        reward = -0.01  # Small step penalty for efficiency
+        # Use only positive rewards to stay within (0, 1) range
+        reward = 0.001
         response = ""
         
         # Action logging
@@ -147,11 +155,11 @@ class FinalEnvironment(Environment):
                 self.search_results = found
                 response = f"Found {len(found)} articles in Knowledge Base."
                 if not self.found_kb:
-                    reward += 0.1  # Reward for first successful search
+                    reward += 0.05  # Positive reward
                     self.found_kb = True
             else:
                 response = "No matching articles found in Knowledge Base."
-                reward -= 0.05  # Penalty for bad query
+                reward += 0.001  # Tiny positive reward even for bad query
 
         elif action.action_type == "get_customer_details":
             cid = action.customer_id
@@ -159,17 +167,17 @@ class FinalEnvironment(Environment):
                 self.customer_details = self.CUSTOMER_DB[cid]
                 response = f"Retrieved details for customer {cid}."
                 if not self.found_customer:
-                    reward += 0.1  # Reward for first successful lookup
+                    reward += 0.05
                     self.found_customer = True
             else:
                 response = f"Customer ID {cid} not found."
-                reward -= 0.05
+                reward += 0.001
 
         elif action.action_type == "send_message":
             msg = action.message
             response = f"Message sent to customer: '{msg}'"
             # Interaction reward
-            reward += 0.02
+            reward += 0.01
 
         elif action.action_type == "resolve_ticket":
             self.is_closed = True
@@ -191,11 +199,11 @@ class FinalEnvironment(Environment):
                     success = True
 
             if success:
-                success_rewards = {"easy": 0.85, "medium": 0.6, "hard": 0.3}
-                reward += success_rewards.get(self.current_task_id, 0.3)
+                success_rewards = {"easy": 0.8, "medium": 0.6, "hard": 0.4}
+                reward += success_rewards.get(self.current_task_id, 0.4)
                 response = "Ticket resolved successfully."
             else:
-                reward -= 0.4  # Penalty for incorrect resolution
+                reward += 0.01  # Small reward even for wrong resolution
                 response = "Ticket closed but resolution was incorrect or incomplete."
 
         self.last_response = response
@@ -205,19 +213,20 @@ class FinalEnvironment(Environment):
         self.accumulated_reward += reward
         
         done = self.is_closed or self._state.step_count >= 10
+        info = {}
+        
         if done:
             # Clamp the final total reward to [0.01, 0.99] to satisfy "strictly between 0 and 1"
             target_total = max(0.01, min(0.99, self.accumulated_reward))
             # Adjust the current step's reward so that (previous_accumulated + adjusted_reward) == target_total
             reward = target_total - previous_accumulated
             self.accumulated_reward = target_total
+        # Provide score in both info dict and as field in FinalObservation
+        info["score"] = float(self.accumulated_reward)
 
-        obs = self._get_observation()
-        obs.reward = reward
-        obs.done = done
-        return obs
+        return self._get_observation(reward=float(reward), done=bool(done), info=info)
 
-    def _get_observation(self) -> FinalObservation:
+    def _get_observation(self, reward: float = 0.0, done: bool = False, info: Dict = None) -> FinalObservation:
         task = self.TASKS[self.current_task_id]
         return FinalObservation(
             ticket_id=task["id"],
@@ -227,10 +236,19 @@ class FinalEnvironment(Environment):
             customer_details=self.customer_details,
             last_response=self.last_response,
             is_closed=self.is_closed,
-            done=self.is_closed,
-            reward=0.0, # This is the reward for the step, set in step()
+            done=done,
+            reward=reward,
+            task_score=float(self.accumulated_reward),
+            info=info or {}
         )
 
     @property
     def state(self) -> State:
         return self._state
+
+    def grader(self) -> float:
+        """
+        Return the final score for the current episode.
+        Strictly between 0 and 1.
+        """
+        return max(0.01, min(0.99, self.accumulated_reward))
