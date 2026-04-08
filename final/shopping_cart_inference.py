@@ -4,7 +4,17 @@ import time
 from typing import List, Dict, Any
 from dotenv import load_dotenv
 from openai import OpenAI
-from final.client import ShoppingCartEnv, ShoppingCartAction, ShoppingCartObservation
+
+try:
+    from client import ShoppingCartEnv, ShoppingCartAction, ShoppingCartObservation
+except (ImportError, ModuleNotFoundError):
+    try:
+        from final.client import ShoppingCartEnv, ShoppingCartAction, ShoppingCartObservation
+    except (ImportError, ModuleNotFoundError):
+        import sys
+        from pathlib import Path
+        sys.path.append(str(Path(__file__).parent))
+        from client import ShoppingCartEnv, ShoppingCartAction, ShoppingCartObservation
 
 # Load environment variables from .env file
 load_dotenv()

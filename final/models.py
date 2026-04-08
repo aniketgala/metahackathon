@@ -41,3 +41,27 @@ class FinalObservation(Observation):
     done: bool = Field(default=False, description="Whether the episode is finished")
     info: Dict[str, Any] = Field(default_factory=dict, description="Additional information")
     task_score: float = Field(default=0.1, description="The current score of the task (strictly 0-1)")
+
+
+class ShoppingCartAction(Action):
+    """Action for the Shopping Cart environment."""
+
+    action_type: Literal["add_item", "remove_item", "update_quantity", "checkout", "view_cart"] = Field(
+        ..., description="The type of action to perform"
+    )
+    item_id: Optional[str] = Field(None, description="ID of the item to add, remove, or update")
+    quantity: Optional[int] = Field(None, description="Quantity of the item")
+
+
+class ShoppingCartObservation(Observation):
+    """Observation from the Shopping Cart environment."""
+
+    cart_id: str = Field(..., description="The unique ID of the shopping cart")
+    items_in_cart: List[Dict[str, Any]] = Field(default_factory=list, description="List of items currently in the cart")
+    total_price: float = Field(default=0.0, description="Total price of items in the cart")
+    last_action_status: str = Field(default="", description="Status message from the last action")
+    is_checked_out: bool = Field(default=False, description="Whether the cart has been checked out")
+    reward: float = Field(default=0.1, description="The reward for the current step")
+    done: bool = Field(default=False, description="Whether the episode is finished")
+    info: Dict[str, Any] = Field(default_factory=dict, description="Additional information")
+    task_score: float = Field(default=0.1, description="The current score of the task (strictly 0-1)")

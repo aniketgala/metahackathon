@@ -1,6 +1,6 @@
 spec_version: 1
-name: support_ticket_env
-description: "A customer support environment for ticket resolution using knowledge base and customer data. Updated for Phase 2."
+name: shopping_cart_env
+description: "An environment for managing a shopping cart, including adding, removing, updating items, and checkout. Scoring is strictly between 0.1 and 0.9."
 type: space
 runtime: fastapi
 app: server.app:app
@@ -8,20 +8,20 @@ port: 8000
 
 tasks:
   - id: easy
-    name: "Password Reset"
-    description: "User wants to reset their password."
+    name: "Add and Checkout"
+    description: "Add 2 apples to the cart and checkout."
     difficulty: easy
     grader:
       type: programmatic
   - id: medium
-    name: "Order Status"
-    description: "User wants to know the status of their latest order."
+    name: "Modify and Checkout"
+    description: "Add 3 bananas, remove 1, add 1 milk, and checkout."
     difficulty: medium
     grader:
       type: programmatic
   - id: hard
-    name: "Refund Request"
-    description: "User wants a refund for their Premium subscription. Check eligibility."
+    name: "Complex Order and Checkout"
+    description: "Add 5 oranges, update to 2, add 1 bread, and checkout."
     difficulty: hard
     grader:
       type: programmatic
