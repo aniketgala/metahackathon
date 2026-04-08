@@ -86,7 +86,7 @@ class FinalEnvironment(Environment):
     }
 
     def __init__(self):
-        """Initialize the support ticket environment."""
+        """Initialize the support ticket environment. (Refreshed)"""
         self._state = State(episode_id=str(uuid4()), step_count=0)
         self.task_order = ["easy", "medium", "hard"]
         self.current_task_id = "easy"
