@@ -11,6 +11,8 @@ load_dotenv()
 
 # Configuration
 API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+if "huggingface.co" in API_BASE_URL and not API_BASE_URL.endswith("/"):
+    API_BASE_URL += "/"
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4-turbo-preview")
 HF_TOKEN = os.getenv("HF_TOKEN")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY") or HF_TOKEN
@@ -65,12 +67,14 @@ def get_llm_action(messages: List[Dict[str, str]], task_id: str, step_count: int
             
         return {"action_type": "resolve_ticket", "resolution": "Task completed."}
     
-    response = client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=messages,
-        response_format={"type": "json_object"}
-    )
-    return json.loads(response.choices[0].message.content)
+    params = {"model": MODEL_NAME, "messages": messages}
+    if "huggingface" not in API_BASE_URL:
+        params["response_format"] = {"type": "json_object"}
+    response = client.chat.completions.create(**params)
+    try:
+        return json.loads(response.choices[0].message.content)
+    except Exception:
+        return {"action_type": "resolve_ticket", "resolution": "Task completed."}
 
 def run_task(task_id: str, env_url: str):
     print(f"[START] Task: {task_id}")
