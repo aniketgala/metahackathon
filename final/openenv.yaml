@@ -1,6 +1,6 @@
 spec_version: 1
 name: support_ticket_env
-description: "A customer support environment for ticket resolution using knowledge base and customer data."
+description: "A customer support environment for ticket resolution using knowledge base and customer data. Updated for Phase 2."
 type: space
 runtime: fastapi
 app: server.app:app
