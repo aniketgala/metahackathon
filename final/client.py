@@ -12,7 +12,10 @@ from openenv.core import EnvClient
 from openenv.core.client_types import StepResult
 from openenv.core.env_server.types import State
 
-from .models import FinalAction, FinalObservation
+try:
+    from models import FinalAction, FinalObservation
+except (ImportError, ModuleNotFoundError):
+    from .models import FinalAction, FinalObservation
 
 
 class FinalEnv(

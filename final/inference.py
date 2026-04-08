@@ -7,8 +7,14 @@ from openai import OpenAI
 
 try:
     from client import FinalEnv, FinalAction, FinalObservation
-except ImportError:
-    from final.client import FinalEnv, FinalAction, FinalObservation
+except (ImportError, ModuleNotFoundError):
+    try:
+        from final.client import FinalEnv, FinalAction, FinalObservation
+    except (ImportError, ModuleNotFoundError):
+        import sys
+        from pathlib import Path
+        sys.path.append(str(Path(__file__).parent))
+        from client import FinalEnv, FinalAction, FinalObservation
 
 # Load environment variables from .env file
 load_dotenv()
