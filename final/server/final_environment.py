@@ -12,7 +12,7 @@ except:
     from final.models import FinalAction, FinalObservation
 
 
-def clamp(x: float, low: float = 0.001, high: float = 0.999) -> float:
+def clamp(x: float, low: float = 0.0, high: float = 1.0) -> float:
     return max(low, min(high, float(x)))
 
 
@@ -42,7 +42,7 @@ class FinalEnvironment(Environment):
         self._state = State(episode_id=str(uuid4()), step_count=0)
         self.current_task_id = "easy"
 
-        self.accumulated_reward = 0.1
+        self.accumulated_reward = 0.0
         self.is_closed = False
 
         self.found_kb = False
@@ -58,7 +58,7 @@ class FinalEnvironment(Environment):
 
         self._state = State(episode_id=str(uuid4()), step_count=0)
 
-        self.accumulated_reward = 0.1
+        self.accumulated_reward = 0.0
         self.is_closed = False
 
         self.found_kb = False
@@ -68,11 +68,11 @@ class FinalEnvironment(Environment):
         self.customer_details = {}
         self.last_response = "New ticket assigned"
 
-        return self._get_observation(reward=0.1, done=False)
+        return self._get_observation(reward=0.0, done=False)
 
     def step(self, action: FinalAction):
         if self.is_closed:
-            return self._get_observation(reward=0.001, done=True)
+            return self._get_observation(reward=0.0, done=True)
 
         self._state.step_count += 1
 
@@ -114,7 +114,7 @@ class FinalEnvironment(Environment):
 
         # Compute new total
         new_total = self.accumulated_reward + step_potential
-        target_total = max(0.1, min(0.9, new_total))
+        target_total = max(0.0, min(1.0, new_total))
 
         step_reward = target_total - self.accumulated_reward
 
@@ -124,7 +124,7 @@ class FinalEnvironment(Environment):
 
         return self._get_observation(reward=step_reward, done=done)
 
-    def _get_observation(self, reward=0.001, done=False):
+    def _get_observation(self, reward=0.0, done=False):
         return FinalObservation(
             ticket_id=self._state.episode_id,
             ticket_description=self.TASKS[self.current_task_id]["description"],
@@ -145,4 +145,3 @@ class FinalEnvironment(Environment):
 
     def grader(self) -> float:
         return clamp(self.accumulated_reward)
-

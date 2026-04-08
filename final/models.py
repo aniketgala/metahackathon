@@ -40,7 +40,7 @@ class FinalObservation(Observation):
     reward: float = Field(default=0.001, description="The reward for the current step")
     done: bool = Field(default=False, description="Whether the episode is finished")
     info: Dict[str, Any] = Field(default_factory=dict, description="Additional information")
-    task_score: float = Field(default=0.001, description="The current score of the task (strictly 0-1)")
+    task_score: float = Field(default=0.0, description="The current score of the task (between 0 and 1)")
 
 
 class ShoppingCartAction(Action):
@@ -64,4 +64,4 @@ class ShoppingCartObservation(Observation):
     reward: float = Field(default=0.001, description="The reward for the current step")
     done: bool = Field(default=False, description="Whether the episode is finished")
     info: Dict[str, Any] = Field(default_factory=dict, description="Additional information")
-    task_score: float = Field(default=0.001, description="The current score of the task (strictly 0-1)")
+    task_score: float = Field(default=0.0, description="The current score of the task (between 0 and 1)")

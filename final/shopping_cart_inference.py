@@ -122,10 +122,10 @@ def run_task(task_id: str, env_url: str):
             messages.append({"role": "user", "content": f"Observation: {obs.last_action_status}\nItems in Cart: {obs.items_in_cart}\nTotal Price: {obs.total_price:.2f}\nChecked Out: {obs.is_checked_out}"})
 
         final_score = obs.task_score
-        if final_score < 0.001:
-            final_score = 0.001
-        if final_score > 0.999:
-            final_score = 0.999
+        if final_score < 0.0:
+            final_score = 0.0
+        if final_score > 1.0:
+            final_score = 1.0
         print(f"[END] Task: {task_id}, Steps: {step_count}, Total Reward: {total_reward:.4f}, Final Score: {final_score:.4f}")
         return final_score
 
@@ -138,10 +138,10 @@ if __name__ == "__main__":
     for t in tasks:
         try:
             score = run_task(t, ENV_URL)
-            scores[t] = 0.001 if score < 0.001 else (0.999 if score > 0.999 else score)
+            scores[t] = 0.0 if score < 0.0 else (1.0 if score > 1.0 else score)
         except Exception as e:
             print(f"Error running task {t}: {e}")
-            scores[t] = 0.001
+            scores[t] = 0.0
             
     print("\nFinal Baseline Scores:")
     for t, s in scores.items():
