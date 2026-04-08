@@ -20,7 +20,7 @@ COPY . .
 RUN uv pip install --system .
 
 # Set environment variables
-ENV PYTHONPATH=".:$PYTHONPATH"
+ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
 # Expose the port

@@ -27,6 +27,7 @@ Usage:
     # Or run directly:
     python -m server.app
 """
+from fastapi import FastAPI, WebSocket
 
 try:
     from openenv.core.env_server.http_server import create_app
@@ -81,3 +82,4 @@ def main(host: str = "0.0.0.0", port: int = 8000):
 
 if __name__ == "__main__":
     main()
+    
