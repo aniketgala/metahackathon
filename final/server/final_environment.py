@@ -73,13 +73,13 @@ class FinalEnvironment(Environment):
         },
         "medium": {
             "id": "task_medium",
-            "description": "User wants to know the status of their latest order.",
+            "description": "User wants to know the status of their latest order. Verify using customer records and include the order ID and status in the resolution.",
             "customer_id": "CUST123",
             "expected_info": "ORD654",
         },
         "hard": {
             "id": "task_hard",
-            "description": "User wants a refund for their Premium subscription. They started it on 2026-03-15. Check if they are eligible (policy: within 30 days).",
+            "description": "User wants a refund for their Premium subscription (started on 2026-03-15). Check eligibility against the 30-day policy using KB and customer details; include the start date and policy basis in the resolution.",
             "customer_id": "CUST123",
             "expected_info": "eligible",
         },
@@ -190,10 +190,10 @@ class FinalEnvironment(Environment):
                 if "password" in res.lower() and "settings" in res.lower():
                     success = True
             elif self.current_task_id == "medium":
-                if "processing" in res.lower() or "ORD654" in res.upper():
+                if self.found_customer and ("processing" in res.lower()) and ("ORD654" in res.upper()):
                     success = True
             elif self.current_task_id == "hard":
-                if ("eligible" in res.lower() or "approve" in res.lower()) and "30" in res:
+                if self.found_kb and self.found_customer and ("eligible" in res.lower() or "approve" in res.lower()) and ("30" in res) and ("2026-03-15" in res):
                     success = True
 
             if success:

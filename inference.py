@@ -63,7 +63,7 @@ def get_llm_action(messages: List[Dict[str, str]], task_id: str, step_count: int
             if step_count == 1: return {"action_type": "search_kb", "query": "refund policy"}
             if step_count == 2: return {"action_type": "get_customer_details", "customer_id": "CUST123"}
             if step_count == 3: return {"action_type": "send_message", "message": "I see you started your subscription on 2026-03-15."}
-            if step_count == 4: return {"action_type": "resolve_ticket", "resolution": "You are eligible for a refund because it is within 30 days."}
+            if step_count == 4: return {"action_type": "resolve_ticket", "resolution": "You are eligible for a refund because it is within 30 days from 2026-03-15."}
             
         return {"action_type": "resolve_ticket", "resolution": "Task completed."}
     
