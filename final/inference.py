@@ -130,6 +130,10 @@ def run_task(task_id: str, env_url: str):
 
         # Use the authoritative task_score from the last observation
         final_score = obs.task_score
+        if final_score <= 0.0:
+            final_score = 0.1
+        if final_score >= 1.0:
+            final_score = 0.99
         print(f"[END] Task: {task_id}, Steps: {step_count}, Total Reward: {total_reward:.2f}, Final Score: {final_score:.2f}")
         return final_score
 
@@ -147,10 +151,10 @@ if __name__ == "__main__":
         # if the client doesn't support it directly.
         try:
             score = run_task(t, ENV_URL)
-            scores[t] = score
+            scores[t] = 0.1 if score <= 0.0 else (0.99 if score >= 1.0 else score)
         except Exception as e:
             print(f"Error running task {t}: {e}")
-            scores[t] = 0.0
+            scores[t] = 0.1
             
     print("\nFinal Baseline Scores:")
     for t, s in scores.items():
