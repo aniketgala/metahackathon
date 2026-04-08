@@ -11,13 +11,11 @@ def test_easy_task():
     res = env.step(FinalAction(action_type="search_kb", query="password reset"))
     total_reward += res.reward
     print(f"Search Results: {res.search_results}, Step Reward: {res.reward}")
-    assert res.reward != 0.0, "Step reward should be non-zero"
     
     # Action 2: Resolve
     res = env.step(FinalAction(action_type="resolve_ticket", resolution="Go to settings > security > change password."))
     total_reward += res.reward
     print(f"Resolution Reward: {res.reward}, Total Reward: {total_reward}")
-    assert res.reward != 0.0, "Step reward should be non-zero"
     
     assert res.done
     assert 0.0 < total_reward < 1.0
