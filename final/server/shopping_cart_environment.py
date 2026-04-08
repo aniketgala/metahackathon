@@ -49,7 +49,7 @@ class ShoppingCartEnvironment(Environment):
         self.current_task_id = "easy"
         self.is_checked_out = False
         self.last_action_status = ""
-        self.accumulated_reward = 0.1 # Start with non-zero
+        self.accumulated_reward = 0.001 # Start with non-zero
         self.history = []
 
     def reset(self, task_id: str = None) -> ShoppingCartObservation:
@@ -64,17 +64,17 @@ class ShoppingCartEnvironment(Environment):
         self._state = State(episode_id=str(uuid4()), step_count=0, cart=defaultdict(int))
         self.is_checked_out = False
         self.last_action_status = f"New shopping cart task: {task['description']}"
-        self.accumulated_reward = 0.1 # Start at 0.1
+        self.accumulated_reward = 0.001 # Start at 0.001
         self.history = []
         
-        return self._get_observation(reward=0.1, done=False, info={})
+        return self._get_observation(reward=0.001, done=False, info={})
 
     @property
     def state(self) -> State:
         return self._state
 
     def grader(self) -> float:
-        return max(0.1, min(0.9, self.accumulated_reward))
+        return max(0.001, min(0.999, self.accumulated_reward))
 
     def _get_observation(self, reward: float = 0.0, done: bool = False, info: Dict = None) -> ShoppingCartObservation:
         current_items = []
@@ -171,7 +171,7 @@ class ShoppingCartEnvironment(Environment):
                 self.last_action_status = "Checkout failed: Cart does not match task requirements."
         
         new_accumulated = self.accumulated_reward + step_potential
-        target_total = max(0.1, min(0.9, new_accumulated))
+        target_total = max(0.001, min(0.999, new_accumulated))
         actual_step_reward = target_total - self.accumulated_reward
         self.accumulated_reward = target_total
         
