@@ -92,7 +92,9 @@ def run_task(task_id: str, env_url: str):
         obs = result.observation
         done = False
         step_count = 0
-        total_reward = result.reward or 0.01
+        
+        # Start with the reward from reset (0.01)
+        total_reward = obs.reward if obs.reward is not None else 0.01
         
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT},
@@ -110,18 +112,22 @@ def run_task(task_id: str, env_url: str):
             result = env.step(action)
             obs = result.observation
             done = result.done
-            reward = result.reward or 0.0
+            
+            # Use observation's reward if step reward is None
+            reward = result.reward if result.reward is not None else obs.reward
             total_reward += reward
             
             # Log step
-            print(f"[STEP] {step_count}: Action={action.action_type}, Reward={reward:.2f}")
+            print(f"[STEP] {step_count}: Action={action.action_type}, Reward={reward:.2f}, Task Score={obs.task_score:.2f}")
             
             # Update messages for next step
             messages.append({"role": "assistant", "content": json.dumps(action_json)})
             messages.append({"role": "user", "content": f"Observation: {obs.last_response}\nKB Results: {obs.search_results}\nCustomer Details: {obs.customer_details}\nClosed: {obs.is_closed}"})
 
-        print(f"[END] Task: {task_id}, Steps: {step_count}, Total Reward: {total_reward:.2f}")
-        return total_reward
+        # Use the authoritative task_score from the last observation
+        final_score = obs.task_score
+        print(f"[END] Task: {task_id}, Steps: {step_count}, Total Reward: {total_reward:.2f}, Final Score: {final_score:.2f}")
+        return final_score
 
 if __name__ == "__main__":
     # In a real scenario, the server would be running.
